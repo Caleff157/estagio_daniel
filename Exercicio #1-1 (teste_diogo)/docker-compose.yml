@@ -1,0 +1,40 @@
+version: "2.0"
+services:
+  db:
+    image: mysql:5.7 #aqui eu rodo uma imagem do Mysql na versão 5.7
+    container_name: db #
+    restart: always # aqui eu defino a politica de reinicialização do container para sempre reinicializar
+    environment: #defino as variáveis de ambiente
+      MYSQL_ROOT_PASSWORD: 123456 #aqui eu declaro a senha do usuário root
+      MYSQL_DATABASE: app_database #aqui eu defino um nome da database
+      MYSQL_USER: diogo #aqui eu crio um usuário
+      MYSQL_PASSWORD: 78901 #aqui eu defino uma senha para o meu usuário
+    ports:
+      - "6033:3306" #aqui eu ligo a porta 6033 do meu localhost a porta 3306 do container
+    volumes:
+      - ./data:/var/lib/mysql #aqui eu vinculo a pasta "data" do meu diretorio local ao /var/lib/mysql do container signigica que o que eu fizer no bd pelo container fica salvo localmente na /teste e quando eu reinicializar o container ele vai construir o bd a partir dos dados contidos na /teste
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - db #linco o PHPMYADIN ao container "db"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+     - "8081:80"
+  python-diogo:
+    build: ./app #aqui eu construou uma imagem propria usando o DockerFile dentro da pasta /app
+    container_name: python_teste
+    links:
+      - db #crio um link com o DB para poder acessar como host do banco de dados dentro do código Python
+    environment: #variaveis de ambiente para acessar o banco de dados dentro do código Python
+      HOST: 'db'
+      PORT: '3306'
+      USER: 'root'
+      PASSWORD: '123456'
+      DATABASE: 'app_database'
+    restart: always
+  
